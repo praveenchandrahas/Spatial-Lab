@@ -166,7 +166,7 @@ def parse_layout(raw: dict, source: str = "") -> Layout:
 
 
 def default_layout_path() -> Path:
-    return Path(__file__).parent / "layouts" / "praveen-5.1.2.yml"
+    return Path(__file__).parent / "layouts" / "author-5.1.2.yml"
 
 
 def find_layout_path(explicit: str | None = None) -> Path:

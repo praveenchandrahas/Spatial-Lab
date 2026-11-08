@@ -1,0 +1,26 @@
+site_name: Spatial-Lab
+site_description: "An interactive 3D test bench for multichannel audio. Drag a sound object around a model of the room and hear it on the real speakers."
+repo_url: https://github.com/praveenchandrahas/Spatial-Lab
+repo_name: praveenchandrahas/Spatial-Lab
+docs_dir: docs
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      toggle: {icon: material/brightness-7, name: Switch to dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      toggle: {icon: material/brightness-4, name: Switch to light mode}
+  features: [navigation.instant, navigation.top, toc.integrate, content.code.copy]
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Design notes: design.md
+  - Part of the Software-Defined Home Theatre: https://praveenchandrahas.github.io/Software-Defined-Home-Theatre/repos/

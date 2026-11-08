@@ -3,8 +3,14 @@
 # Spatial-Lab
 
 An interactive 3D test bench for a multichannel room. Open a page, drag a sound object around a model of
-the room, and hear it move on the real speakers. Built for a 5.1.2 setup (Logitech Z906 bed, two ceiling
+the room, and hear it move on the real speakers. Built for the author's 5.1.2 setup (Logitech Z906 bed, two ceiling
 height speakers, 7.1 USB interface, CamillaDSP, PipeWire), but the layout is a file you can change.
+
+It is one of the repositories of the [Software-Defined Home Theatre](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre)
+project (its [repository map](https://praveenchandrahas.github.io/Software-Defined-Home-Theatre/repos/)). Where the other
+repositories tune and measure the room, this one is for listening to it: it moves a test sound around the real speakers on demand.
+It needs none of the other repositories, but it shares their PipeWire and CamillaDSP setup and sits beside them
+(`scripts/clone-all.sh` in the main repository clones it into the same folder).
 
 It demonstrates:
 
@@ -21,7 +27,7 @@ Sound is made by a local Python engine, not by the browser. The page only draws 
 ## Safety
 
 - Starts **muted**. Unmute fades in over 3 s.
-- Master level is clamped to a **ceiling of -40 dBFS** read from your config at start-up. The page cannot raise it.
+- Master level is clamped to a **ceiling of -40 dBFS** read from the config file at start-up. The page cannot raise it.
   Raise it by hand: `spatial-lab set-ceiling -30`, then restart.
 - **Esc** or the PANIC button silences in 20 ms. **M** toggles mute.
 - The engine mutes itself if the page stops responding for 4 s or the last page closes.
@@ -75,16 +81,16 @@ Tested (automated, 30 tests, plus a headless browser run):
 - Server security (Host/Origin rejection, path traversal), uploads, recordings, commands.
 - The page loads, connects, shows live readouts, and dragging moves the object.
 
-**Not tested** (needs your machine):
+**Not tested** (needs the real rig):
 
 - Real audio through PipeWire: `pw-cat` start-up, the explicit links to the USB sink and to CamillaDSP, and the
-  route switch. The code follows the pattern of your tone-test script, but it has never run against your system.
+  route switch. The code follows the pattern of the author's `tone-test.sh` (in Roomtone), but it has not been run against the real PipeWire graph yet.
 - Whether anything sounds right. All "predicted image" values are calculated, not measured.
 - Mic-based verification is deferred.
 
 ## Known limitations and assumptions
 
-- **Surround distance.** You gave about 3 ft to each surround. Your CamillaDSP delay and trim for them suggest
+- **Surround distance.** The author's rough figure is about 3 ft to each surround, but the CamillaDSP delay and trim for them suggest
   nearer 5 ft. The layout file uses 3 ft; measure and correct it. It only affects the 3D drawing and alignment.
 - **Heights' distance, ceiling height and seat-to-back-wall are guesses** (marked `provisional`).
 - Both height speakers are ahead of the seat, so an object straight overhead lands on TFL+TFR plus the surrounds.
@@ -96,7 +102,7 @@ Tested (automated, 30 tests, plus a headless browser run):
 
 ## Layout and config
 
-- Layout: `spatial_lab/layouts/praveen-5.1.2.yml`; override with `~/.config/spatial-lab/layout.yml`,
+- Layout: `spatial_lab/layouts/author-5.1.2.yml`; override with `~/.config/spatial-lab/layout.yml`,
   `$SPATIAL_LAB_LAYOUT` or `--layout`.
 - Config: `~/.config/spatial-lab/config.yml` (ceiling, fade-in, port, high-pass).
 - Recordings: `~/.local/share/spatial-lab/recordings`.

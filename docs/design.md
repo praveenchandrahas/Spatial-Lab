@@ -52,6 +52,6 @@ script. Uploads are decoded with ffmpeg to 48 kHz mono (first five minutes).
 
 ## Layout file
 
-`spatial_lab/layouts/praveen-5.1.2.yml` holds the output port order, CamillaDSP node names, room size and each
+`spatial_lab/layouts/author-5.1.2.yml` holds the output port order, CamillaDSP node names, room size and each
 speaker's direction and rough distance. Copy it to `~/.config/spatial-lab/layout.yml` to override it. Entries
 marked `provisional` are guesses.
