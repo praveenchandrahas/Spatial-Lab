@@ -1,3 +1,5 @@
+![Spatial-Lab: an interactive 3D test bench for multichannel audio](docs/banner.png)
+
 # Spatial-Lab
 
 An interactive 3D test bench for a multichannel room. Open a page, drag a sound object around a model of
