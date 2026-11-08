@@ -49,9 +49,10 @@ spatial-lab check
 spatial-lab serve --open
 ```
 
-The package is pure Python and installs the `spatial-lab` command. It has not yet been installed on the author's
-rig; it was built and smoke-tested (check, serve, static files) from an unpacked copy. Build it yourself with
-`tools/build-deb.sh`.
+The package is pure Python and installs the `spatial-lab` command. The author installed it with `apt` on the rig
+laptop (2026-11-08) and `spatial-lab check` ran correctly from the installed copy. Sound through it has not yet been
+tried: the USB interface was not connected at that moment, so `serve` stopped with "cannot route to the USB interface".
+Build the package yourself with `tools/build-deb.sh`.
 
 **From source:**
 
