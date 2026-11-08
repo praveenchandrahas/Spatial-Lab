@@ -55,3 +55,5 @@ script. Uploads are decoded with ffmpeg to 48 kHz mono (first five minutes).
 `spatial_lab/layouts/author-5.1.2.yml` holds the output port order, CamillaDSP node names, room size and each
 speaker's direction and rough distance. Copy it to `~/.config/spatial-lab/layout.yml` to override it. Entries
 marked `provisional` are guesses.
+
+See the [screenshots in the README](index.md#screenshots) for renders of the page (silent null backend).

@@ -58,6 +58,33 @@ python3 -m spatial_lab serve --open   # then use the page
 5. Switch to **Through CamillaDSP** and compare. Expect differences: CamillaDSP adds bass management, EQ, its own
    delays and trims. In Through mode distance alignment is off by default because CamillaDSP already aligns.
 
+## Screenshots
+
+These are real renders of the page, not mock-ups, taken headless with `--backend null` (no audio device, so
+**no sound was played and none is shown**). The numbers on screen, such as the predicted image direction, are
+computed by the engine from the speaker gains. They are predictions, not microphone measurements, and these are
+not photos of the author's room. Regenerate them with `node tools/screenshots.js`.
+
+![Overview camera: the object on the height-arc path, rays to the two ceiling speakers](docs/screenshots/overview.png)
+
+*Overview camera. The object sits on the `height_arc` path; blue rays show which speakers are driven.*
+
+![Top camera: object mode with VBAP between FL, FR and TFR](docs/screenshots/top-lap.png)
+
+*Top camera, Object mode: a three-speaker VBAP mix with the predicted energy and velocity vectors.*
+
+![Labs: FL and FR chosen with 1 ms delay on FR](docs/screenshots/labs.png)
+
+*Chosen speakers with a 1.00 ms delay on FR, and the Labs note on the precedence effect and comb notch.*
+
+![Seat camera: the view from the listening position](docs/screenshots/seat-view.png)
+
+*Seat camera, looking at the front wall from the listening position.*
+
+<img src="docs/screenshots/phone.png" alt="Phone-width layout" width="280">
+
+*The same page at phone width.*
+
 ## Using the page
 
 - Drag the amber ball. Shift+drag (or the "Drag up/down" box, key V) moves it vertically.
