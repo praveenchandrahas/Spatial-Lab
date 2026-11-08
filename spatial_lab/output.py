@@ -93,6 +93,25 @@ class WavOut:
             wavfile.write(self.path, FS, self.data().astype(np.float32))
 
 
+def _pwcat_has_raw() -> bool:
+    try:
+        r = subprocess.run(["pw-cat", "--help"], capture_output=True, text=True, timeout=3)
+        return "--raw" in (r.stdout + r.stderr)
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def wav_stream_header(channels: int, rate: int) -> bytes:
+    """WAVE_FORMAT_EXTENSIBLE float32 header with an 'unknown' (maximum) length, for streaming through a pipe."""
+    import struct
+    mask = 0x63F if channels == 8 else 0
+    block = channels * 4
+    fmt = struct.pack("<HHIIHHHHI", 0xFFFE, channels, rate, rate * block, block, 32, 22, 32, mask)
+    fmt += bytes.fromhex("0300000000001000800000aa00389b71")
+    return (b"RIFF" + struct.pack("<I", 0xFFFFFFFF) + b"WAVE" + b"fmt " + struct.pack("<I", len(fmt)) + fmt
+            + b"data" + struct.pack("<I", 0xFFFFFFFF))
+
+
 def _run(cmd: list[str], timeout: float = 3.0) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
 
@@ -156,12 +175,21 @@ class PipeWireOut:
         n = self.layout.n_out
         cmap = ",".join(self._pos(i) for i in range(n))
         props = "{ node.name = %s node.autoconnect = false media.name = Spatial-Lab }" % STREAM_NODE
-        cmd = ["pw-cat", "--playback", "--raw", "--rate", str(FS), "--channels", str(n), "--format", "f32",
+        raw = _pwcat_has_raw()
+        cmd = ["pw-cat", "--playback"] + (["--raw"] if raw else []) + [
+               "--rate", str(FS), "--channels", str(n), "--format", "f32",
                "--channel-map", cmap, "--latency", f"{int(self.cfg.get('pw_latency_ms', 40))}ms",
                "-P", props, "-"]
         self._err = tempfile.TemporaryFile()           # kept so a failure can be explained
         self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
                                      stderr=self._err, bufsize=0)
+        if not raw:
+            # Older pw-cat has no --raw: it reads stdin through libsndfile, so send a WAV header of unknown length.
+            try:
+                self.proc.stdin.write(wav_stream_header(n, FS))
+            except BrokenPipeError:
+                self._err.seek(0)
+                raise OutputError("pw-cat exited: " + self._err.read().decode(errors="replace").strip())
         want = {self._out(i) for i in range(n)}
         t0 = time.monotonic()
         # the stream only shows up in the graph once data flows: feed silence while waiting
