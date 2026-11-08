@@ -2,6 +2,8 @@
 
 # Spatial-Lab
 
+**Documentation: <https://praveenchandrahas.github.io/Spatial-Lab/>**
+
 An interactive 3D test bench for a multichannel room. Open a page, drag a sound object around a model of
 the room, and hear it move on the real speakers. Built for the author's 5.1.2 setup (Logitech Z906 bed, two ceiling
 height speakers, 7.1 USB interface, CamillaDSP, PipeWire), but the layout is a file you can change.
@@ -37,6 +39,21 @@ Sound is made by a local Python engine, not by the browser. The page only draws 
 Start with the amplifier volume low and raise the ceiling in small steps.
 
 ## Install
+
+**From the .deb** (Ubuntu/Kubuntu 22.04 or newer, Debian 12 or newer): download `spatial-lab_*_all.deb` from the
+[latest release](https://github.com/praveenchandrahas/Spatial-Lab/releases/latest), then
+
+```
+sudo apt install ./spatial-lab_0.1.0_all.deb     # pulls in numpy, scipy, aiohttp, yaml
+spatial-lab check
+spatial-lab serve --open
+```
+
+The package is pure Python and installs the `spatial-lab` command. It has not yet been installed on the author's
+rig; it was built and smoke-tested (check, serve, static files) from an unpacked copy. Build it yourself with
+`tools/build-deb.sh`.
+
+**From source:**
 
 ```
 sudo apt install python3-numpy python3-scipy python3-aiohttp python3-yaml ffmpeg pipewire-bin

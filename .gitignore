@@ -8,3 +8,4 @@ renders/
 *.wav
 docs/index.md
 site/
+dist/
