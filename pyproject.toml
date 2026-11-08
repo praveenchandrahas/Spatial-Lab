@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spatial-lab"
+version = "0.1.0"
+description = "Interactive 3D audio test bench: place and move a sound object and hear it on a real multichannel (5.1.2) room."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = ["numpy", "scipy", "aiohttp", "pyyaml"]
+
+[project.optional-dependencies]
+plots = ["matplotlib"]
+dev = ["pytest", "matplotlib"]
+
+[project.scripts]
+spatial-lab = "spatial_lab.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["spatial_lab*"]
+
+[tool.setuptools.package-data]
+spatial_lab = ["layouts/*.yml", "web/*", "web/vendor/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

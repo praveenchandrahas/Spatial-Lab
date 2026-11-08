@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spatial-Lab</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="top">
+  <div class="brand">Spatial-Lab <span id="layoutName"></span></div>
+  <div id="conn" class="pill bad">connecting…</div>
+  <div class="grow"></div>
+  <div id="levelPill" class="pill" title="Estimated loudest block, dBFS">level –</div>
+  <div id="loadPill" class="pill" title="Engine CPU load (fraction of real time)">load –</div>
+  <button id="btnMute" class="big">Unmute</button>
+  <button id="btnPanic" class="big danger" title="Esc">PANIC</button>
+</header>
+
+<main>
+  <section id="stage">
+    <canvas id="view" aria-label="3D room"></canvas>
+    <div id="stageBar">
+      <span class="grp">Camera
+        <button data-cam="overview">Overview</button>
+        <button data-cam="top">Top</button>
+        <button data-cam="side">Side</button>
+        <button data-cam="seat">Seat</button>
+      </span>
+      <label class="chk"><input type="checkbox" id="vertMode"> Drag up/down (V)</label>
+      <span id="dragHint" class="mut">Drag the amber ball. Shift+drag moves it up/down.</span>
+    </div>
+    <div id="toast" role="status"></div>
+    <div id="banner" hidden></div>
+  </section>
+
+  <aside id="side">
+    <details open><summary>Output &amp; safety</summary>
+      <div class="body">
+        <div class="row"><label for="master">Master</label>
+          <input type="range" id="master" min="-90" max="-40" step="0.5">
+          <output id="masterV"></output></div>
+        <p class="mut small" id="ceilNote"></p>
+        <div class="row"><span class="lbl">Route</span>
+          <div class="seg" id="routeSeg">
+            <button data-route="direct">Direct</button>
+            <button data-route="through">Through CamillaDSP</button>
+          </div></div>
+        <p class="small mut" id="routeNote"></p>
+        <div id="outStatus" class="small"></div>
+      </div></details>
+
+    <details open><summary>Object</summary>
+      <div class="body">
+        <div class="readouts">
+          <div><span>Azimuth</span><b id="roAz">–</b></div>
+          <div><span>Elevation</span><b id="roEl">–</b></div>
+          <div><span>Distance</span><b id="roR">–</b></div>
+          <div><span>x / y / z</span><b id="roXYZ">–</b></div>
+        </div>
+        <div class="nudge">
+          <button data-n="-x">◀</button><button data-n="+x">▶</button>
+          <button data-n="+y">Front</button><button data-n="-y">Back</button>
+          <button data-n="+z">Up</button><button data-n="-z">Down</button>
+          <button id="btnCentre">Front centre</button>
+        </div>
+        <div class="row"><label for="law">Panning law</label>
+          <select id="law"><option value="vbap">VBAP (3D, 3 speakers)</option><option value="nearest">Nearest speaker only</option></select></div>
+        <div class="row"><label for="spread">Source size</label>
+          <input type="range" id="spread" min="0" max="60" step="1"><output id="spreadV"></output></div>
+        <div class="row"><label for="corr">Width (decorrelation)</label>
+          <input type="range" id="corr" min="0" max="1" step="0.01"><output id="corrV"></output></div>
+        <div class="imgbox">
+          <div class="small mut">Predicted image (computed from speaker gains, not measured)</div>
+          <div id="imgRE">–</div><div id="imgRV" class="small mut">–</div>
+        </div>
+      </div></details>
+
+    <details><summary>Distance cues</summary>
+      <div class="body">
+        <div class="row"><label for="distExp">Level vs distance</label>
+          <input type="range" id="distExp" min="0" max="2" step="0.05"><output id="distExpV"></output></div>
+        <p class="small mut">0 = off, 1 = 6 dB per doubling (free field), 0.5 = gentler, room-like.</p>
+        <div class="row"><label for="airEx">Air absorption ×</label>
+          <input type="range" id="airEx" min="0" max="50" step="0.5"><output id="airExV"></output></div>
+        <p class="small mut">Real air loss over a few metres is nearly inaudible; raise the multiplier to hear the effect.</p>
+        <div class="row"><label class="chk"><input type="checkbox" id="doppler"> Doppler</label>
+          <input type="range" id="dopScale" min="0" max="20" step="0.5"><output id="dopScaleV"></output></div>
+        <div class="row"><label for="align">Distance alignment</label>
+          <select id="align"><option value="auto">Auto (on in Direct)</option><option value="on">On</option><option value="off">Off</option></select></div>
+      </div></details>
+
+    <details open><summary>Source</summary>
+      <div class="body">
+        <div class="row"><span class="lbl">Signal</span>
+          <div class="seg" id="srcSeg"><button data-src="pink">Pink noise</button><button data-src="file">File</button></div></div>
+        <div class="row"><input type="file" id="fileIn" accept="audio/*,video/*"><span id="fileName" class="small mut"></span></div>
+        <div class="row"><label for="burstOn">Burst on (ms)</label>
+          <input type="range" id="burstOn" min="0" max="2000" step="10"><output id="burstOnV"></output></div>
+        <div class="row"><label for="burstOff">Burst off (ms)</label>
+          <input type="range" id="burstOff" min="0" max="2000" step="10"><output id="burstOffV"></output></div>
+        <p class="small mut">Burst on = 0 gives continuous sound.</p>
+        <div class="row"><label for="hp">High-pass</label>
+          <select id="hp"><option>80</option><option>120</option><option>200</option><option>300</option><option>500</option></select><span class="small mut">Hz (keeps bass out of the satellites)</span></div>
+      </div></details>
+
+    <details><summary>Paths</summary>
+      <div class="body">
+        <div class="row"><select id="presets"></select></div>
+        <div class="row"><button id="pathPlay">Play path</button><button id="pathStop">Stop (hold)</button>
+          <label class="chk"><input type="checkbox" id="pathLoop" checked> loop</label></div>
+        <div class="row"><label for="speed">Speed</label>
+          <input type="range" id="speed" min="0.25" max="4" step="0.05"><output id="speedV"></output></div>
+        <p id="pathNote" class="small mut"></p>
+        <div class="row"><button id="recStart">● Record my dragging</button><button id="recStop">■ Stop</button><span id="recT" class="small"></span></div>
+        <div id="recPending" class="row" hidden>
+          <input type="text" id="recName" placeholder="name" maxlength="40">
+          <button id="recSave">Save</button><button id="recPlay">Replay</button><button id="recDiscard">Discard</button></div>
+        <div id="recList" class="small"></div>
+      </div></details>
+
+    <details open><summary>Speakers</summary>
+      <div class="body">
+        <div class="row"><span class="lbl">Mode</span>
+          <div class="seg" id="modeSeg"><button data-mode="object">Object</button><button data-mode="manual">Chosen speakers</button><button data-mode="identify">Identify</button></div></div>
+        <div id="chips" class="chips"></div>
+        <div id="spkTable"></div>
+        <div class="row"><button id="resetTweaks">Reset trims, delays, polarity, solo</button></div>
+      </div></details>
+
+    <details><summary>Labs (chosen-speaker mode)</summary>
+      <div class="body">
+        <p class="small mut">Pick speakers above (Chosen speakers mode). All chosen speakers play the same signal.
+          Use trim, delay and polarity per speaker, and Width to decorrelate. Predictions are approximate.</p>
+        <div class="row wrap" id="labSets"></div>
+        <div class="row wrap">
+          <button data-sweep="delay">Sweep delay on 2nd speaker 0→3 ms</button>
+          <button data-sweep="level">Sweep level on 2nd speaker −20→0 dB</button>
+          <button data-sweep="width">Sweep width 0→1</button>
+          <button id="sweepStop">Stop sweep</button></div>
+        <div id="labNote" class="small"></div>
+      </div></details>
+  </aside>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
