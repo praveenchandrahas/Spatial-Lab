@@ -20,7 +20,8 @@ jobs:
         with: {python-version: "3.x"}
       - run: pip install mkdocs-material
       # the site home page is the README, with the image paths adjusted and the "Documentation:" link (pointless on the site itself) and its blank line removed
-      - run: sed -e '/^\*\*Documentation: /,+1d' -e 's#docs/banner.png#banner.png#' -e 's#docs/screenshots/#screenshots/#g' README.md > docs/index.md
+      - run: |
+          sed -e '/^\*\*Documentation: /,+1d' -e 's#docs/banner.png#banner.png#' -e 's#docs/screenshots/#screenshots/#g' README.md > docs/index.md
       - run: mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3
         with: {path: site}
