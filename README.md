@@ -50,9 +50,9 @@ spatial-lab serve --open
 ```
 
 The package is pure Python and installs the `spatial-lab` command. The author installed it with `apt` on the rig
-laptop (2026-11-08) and `spatial-lab check` ran correctly from the installed copy. Sound through it has not yet been
-tried: the USB interface was not connected at that moment, so `serve` stopped with "cannot route to the USB interface".
-Build the package yourself with `tools/build-deb.sh`.
+laptop (2026-11-08) and uses it there: with the Vantec connected, `spatial-lab check` shows the USB sink present and
+the CamillaDSP links ok, and the page makes sound through the real speakers (details under "What has and has not been
+tested"). Build the package yourself with `tools/build-deb.sh`.
 
 **From source:**
 
@@ -121,18 +121,31 @@ vs predicted image direction and speaker gains. Nothing is played.
 
 ## What has and has not been tested
 
-Tested (automated, 30 tests, plus a headless browser run):
+**On the author's rig** (reported by the author; dates before 2026-11-16 were not recorded): installed from the `.deb`;
+`check` finds the USB sink, `pw-cat`, `pw-link`, `ffmpeg` and CamillaDSP and reports the CamillaDSP links ok; the
+engine starts on the author's `pw-cat` (which has no `--raw`, so it uses the WAV-header fallback) and the web page
+produces sound through the real speakers. That first round of listening found two problems, both addressed in 0.1.1:
+
+- **Channels came out on the wrong speakers.** The cause was probably the link step trusting the port names `pw-cat`
+  gives its channels, which can follow the WAV header's channel order rather than the engine's. 0.1.1 links by each
+  port's index in the stream, read from `pw-dump`. **Not yet confirmed on the rig**: run Identify mode and check.
+- **No obvious way to send the object to the height speakers.** 0.1.1 adds speaker buttons, an Elevation slider and
+  click-a-speaker. This is a page change; it was checked in a headless browser, not yet used on the rig.
+
+**Automated** (32 tests, plus a headless browser run):
 
 - VBAP maths, pink-noise spectrum, fractional delay, decorrelation, level ceiling, fade-in, panic, watchdog,
-  LFE silence, polarity flip, delay, alignment ordering, distance falloff, identify cycling.
+  LFE silence, polarity flip, delay, alignment ordering, distance falloff, identify cycling, and reading the stream's
+  ports from `pw-dump` in channel order.
 - Server security (Host/Origin rejection, path traversal), uploads, recordings, commands.
-- The page loads, connects, shows live readouts, and dragging moves the object.
+- The page loads, connects, shows live readouts, dragging moves the object, and the speaker buttons and Elevation
+  slider move it.
 
-**Not tested** (needs the real rig):
+**Not yet done:**
 
-- Real audio through PipeWire: `pw-cat` start-up, the explicit links to the USB sink and to CamillaDSP, and the
-  route switch. The code follows the pattern of the author's `tone-test.sh` (in Roomtone), but it has not been run against the real PipeWire graph yet.
-- Whether anything sounds right. All "predicted image" values are calculated, not measured.
+- Confirming the channel order after the 0.1.1 fix, and a recorded comparison of Direct against Through CamillaDSP
+  (which of the two the author has used so far was not recorded).
+- Whether the imaging sounds as predicted. All "predicted image" values are calculated, not measured.
 - Mic-based verification is deferred.
 
 ## Known limitations and assumptions
