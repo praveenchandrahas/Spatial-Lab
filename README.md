@@ -44,7 +44,7 @@ Start with the amplifier volume low and raise the ceiling in small steps.
 [latest release](https://github.com/praveenchandrahas/Spatial-Lab/releases/latest), then
 
 ```
-sudo apt install ./spatial-lab_0.1.0_all.deb     # pulls in numpy, scipy, aiohttp, yaml
+sudo apt install ./spatial-lab_0.1.1_all.deb     # pulls in numpy, scipy, aiohttp, yaml
 spatial-lab check
 spatial-lab serve --open
 ```
@@ -105,7 +105,9 @@ not photos of the author's room. Regenerate them with `node tools/screenshots.js
 
 ## Using the page
 
-- Drag the amber ball. Shift+drag (or the "Drag up/down" box, key V) moves it vertically.
+- Drag the amber ball. Shift+drag (or the "Drag up/down" box, key V) moves it vertically. The Elevation slider in the
+  Object panel raises or lowers it without changing its direction, the speaker buttons (FL, TFL, ...) send it to a
+  speaker, and clicking a speaker in the room does the same.
 - Keys: M mute, Esc panic, Space path, arrows move front/back/left/right, PageUp/PageDown up/down,
   1 to 4 cameras, I identify.
 - **Chosen speakers** mode plays one signal from the speakers you pick. Use trim, delay and polarity per speaker

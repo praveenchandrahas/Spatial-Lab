@@ -47,3 +47,5 @@ summary::before{content:"▸ ";color:var(--mist)}details[open] summary::before{c
 #recList div{display:flex;gap:6px;align-items:center;margin:3px 0}
 .warn{color:var(--object)}.err{color:var(--alert)}.ok{color:var(--ok)}
 @media (max-width:860px){main{grid-template-columns:1fr;grid-template-rows:55vh auto;height:auto}aside#side{border-left:0;border-top:1px solid var(--line)}}
+
+#gotoChips button.h{border-color:var(--heights)}

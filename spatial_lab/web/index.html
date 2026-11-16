@@ -28,7 +28,7 @@
         <button data-cam="seat">Seat</button>
       </span>
       <label class="chk"><input type="checkbox" id="vertMode"> Drag up/down (V)</label>
-      <span id="dragHint" class="mut">Drag the amber ball. Shift+drag moves it up/down.</span>
+      <span id="dragHint" class="mut">Drag the amber ball. Hold Shift (or tick the box) to drag it up/down. Click a speaker to send the ball there.</span>
     </div>
     <div id="toast" role="status"></div>
     <div id="banner" hidden></div>
@@ -64,6 +64,10 @@
           <button data-n="+z">Up</button><button data-n="-z">Down</button>
           <button id="btnCentre">Front centre</button>
         </div>
+        <div class="row"><label for="elev">Elevation</label>
+          <input type="range" id="elev" min="-10" max="90" step="1"><output id="elevV"></output></div>
+        <div class="small mut">Send the object to a speaker (or click a speaker in the room)</div>
+        <div class="chips" id="gotoChips"></div>
         <div class="row"><label for="law">Panning law</label>
           <select id="law"><option value="vbap">VBAP (3D, 3 speakers)</option><option value="nearest">Nearest speaker only</option></select></div>
         <div class="row"><label for="spread">Source size</label>

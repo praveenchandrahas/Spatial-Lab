@@ -166,6 +166,7 @@ function buildUI() {
   $('recPlay').addEventListener('click', () => cmd('replay_pending', { speed: speedVal() }));
 
   buildSpeakers();
+  buildGoto();
   buildLabs();
   document.querySelectorAll('[data-cam]').forEach((b) => b.addEventListener('click', () => camera(b.dataset.cam)));
   $('resetTweaks').addEventListener('click', () => cmd('reset_tweaks'));
@@ -175,6 +176,47 @@ const speedVal = () => parseFloat($('speed').value) || 1;
 function playPath() { cmd('traj', { id: $('presets').value, speed: speedVal(), loop: $('pathLoop').checked }); }
 function toggleMute() { if (S && S.muted) cmd('unmute'); else cmd('mute'); }
 function panic() { cmd('panic'); }
+
+
+// ---- go to speaker, elevation
+
+function gotoSpeaker(name) {
+  const sp = L.speakers.find((x) => x.name === name);
+  if (!sp || !sp.pos) return;
+  const R = L.room, q = sp.pos.map((v) => v * 0.92);       // just inside the speaker, on the line from the seat
+  q[0] = clamp(q[0], R.x[0], R.x[1]); q[1] = clamp(q[1], R.y[0], R.y[1]); q[2] = clamp(q[2], R.z[0], R.z[1]);
+  if (S && S.motion) cmd('stop_motion');
+  send({ t: 'pos', p: q });
+}
+
+function buildGoto() {
+  const box = $('gotoChips'); box.textContent = '';
+  for (const sp of L.speakers) {
+    if (!sp.pos || sp.role === 'sub') continue;
+    const b = document.createElement('button'); b.textContent = sp.name; b.className = sp.role === 'height' ? 'h' : '';
+    b.addEventListener('click', () => gotoSpeaker(sp.name)); box.appendChild(b);
+  }
+  const el = $('elev');
+  const elOf = (p) => { const r = Math.hypot(p[0], p[1], p[2]) || 1; return Math.asin(clamp(p[2] / r, -1, 1)) * 180 / Math.PI; };
+  el.addEventListener('input', () => {
+    if (!S) return;
+    const p = S.pos, r = Math.max(0.3, Math.hypot(p[0], p[1], p[2]));
+    let az = Math.atan2(p[0], p[1]);
+    if (Math.hypot(p[0], p[1]) < 1e-3) az = 0;
+    const e = parseFloat(el.value) * Math.PI / 180, R = L.room;
+    const q = [r * Math.cos(e) * Math.sin(az), r * Math.cos(e) * Math.cos(az), r * Math.sin(e)];
+    q[0] = clamp(q[0], R.x[0], R.x[1]); q[1] = clamp(q[1], R.y[0], R.y[1]); q[2] = clamp(q[2], R.z[0], R.z[1]);
+    $('elevV').textContent = Math.round(parseFloat(el.value)) + '°';
+    if (S.motion) cmd('stop_motion');
+    if (now() - lastPosSent > 30) { lastPosSent = now(); send({ t: 'pos', p: q }); }
+  });
+  ctls.push(() => {
+    if (!S) return;
+    const e = elOf(S.pos);
+    if (document.activeElement !== el) el.value = Math.round(e);
+    $('elevV').textContent = Math.round(e) + '°';
+  });
+}
 
 function nudge(dir, step) {
   if (!S) return;
@@ -348,7 +390,7 @@ function onTick() {
   $('recStart').classList.toggle('danger', !!S.recording);
   $('recT').textContent = S.recording ? `recording ${S.recording.t.toFixed(1)} s` : (mt ? `${mt.id} ${mt.t.toFixed(1)}/${mt.duration} s` : '');
   if (S.params.mode === 'identify' && S.id_current) $('dragHint').textContent = `Identify: now playing ${S.id_current}`;
-  else $('dragHint').textContent = 'Drag the amber ball. Shift+drag moves it up/down.';
+  else $('dragHint').textContent = 'Drag the amber ball. Hold Shift (or tick the box) to drag it up/down. Click a speaker to send the ball there.';
   updateSpeakers();
   $('labNote').textContent = labNote();
 }
@@ -503,7 +545,12 @@ function setRay(e) {
 function onDown(e) {
   if (!S) return;
   setRay(e);
-  if (!ray.intersectObject(hitMesh).length) return;
+  if (!ray.intersectObject(hitMesh).length) {
+    // a click on a speaker sends the object there
+    const hits = ray.intersectObjects(Object.values(spkMeshes).map((x) => x.mesh));
+    if (hits.length) { const nm = Object.keys(spkMeshes).find((k) => spkMeshes[k].mesh === hits[0].object); if (nm) gotoSpeaker(nm); e.preventDefault(); }
+    return;
+  }
   dragging = true; vertDrag = e.shiftKey || $('vertMode').checked;
   controls.enabled = false; $('view').setPointerCapture(e.pointerId);
   const p = objMesh.position;

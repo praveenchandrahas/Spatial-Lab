@@ -124,6 +124,33 @@ def pw_ports(direction: str) -> list[str]:
     return [ln.strip() for ln in r.stdout.splitlines() if ln.strip()]
 
 
+def stream_ports(node_name: str) -> list[str] | None:
+    """Output ports of one node, in channel-index order ('node:port_name'), read from pw-dump.
+
+    Interleaved sample i of a stream goes to the port whose port.id is i, whatever that port is called, so
+    linking by this order is correct however pw-cat decided to label its channels. None when pw-dump is
+    missing or the stream is not in the graph yet."""
+    import json
+    try:
+        r = _run(["pw-dump"], timeout=5.0)
+        objs = json.loads(r.stdout) if r.returncode == 0 else []
+    except Exception:  # noqa: BLE001
+        return None
+    node_ids = {o["id"] for o in objs if o.get("type", "").endswith(":Node")
+                and (o.get("info", {}).get("props", {}) or {}).get("node.name") == node_name}
+    ports = []
+    for o in objs:
+        if not o.get("type", "").endswith(":Port"):
+            continue
+        info = o.get("info", {}) or {}
+        pr = info.get("props", {}) or {}
+        if info.get("direction") == "output" and pr.get("node.id") in node_ids and "port.id" in pr and pr.get("port.name"):
+            ports.append((int(pr["port.id"]), pr["port.name"]))
+    if not ports:
+        return None
+    return [f"{node_name}:{name}" for _, name in sorted(ports)]
+
+
 def pw_links() -> list[tuple[str, str]]:
     """(output port, input port) for every link."""
     r = _run(["pw-link", "-l"])
@@ -152,9 +179,15 @@ class PipeWireOut:
         self.proc: subprocess.Popen | None = None
         self.route: str | None = None
         self.pn = layout.port_names
+        self.out_ports: list[str] | None = None
+        self.stream_map: list[str] = []
 
     # ---- naming
     def _out(self, i: int) -> str:
+        # Which graph port carries channel i is read back from PipeWire (see stream_ports), because pw-cat can
+        # name its ports from the WAV header's channel order instead of from --channel-map.
+        if self.out_ports and i < len(self.out_ports):
+            return self.out_ports[i]
         return f"{STREAM_NODE}:output_{self._pos(i)}"
 
     def _pos(self, i: int) -> str:
@@ -207,6 +240,10 @@ class PipeWireOut:
             time.sleep(0.05)
         else:
             raise OutputError("the Spatial-Lab stream did not appear in the PipeWire graph")
+        sp = stream_ports(STREAM_NODE)
+        if sp and len(sp) == n:
+            self.out_ports = sp
+            self.stream_map = [p.split(":", 1)[1].replace("output_", "") for p in sp]
         self._unlink_all()
         self.set_route("direct")
 
@@ -270,7 +307,8 @@ class PipeWireOut:
 
     def status(self) -> dict:
         st = {"backend": "pipewire", "route": self.route,
-              "alive": self.proc is not None and self.proc.poll() is None, "warnings": []}
+              "alive": self.proc is not None and self.proc.poll() is None, "warnings": [],
+              "stream_map": self.stream_map}
         try:
             ins, outs = set(pw_ports("i")), pw_ports("o")
             st["sink_present"] = any(p.startswith(self.layout.sink + ":") for p in ins)
